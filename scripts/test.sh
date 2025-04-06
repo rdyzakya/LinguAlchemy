@@ -1,0 +1,1 @@
+python -m src.lingualchemy --model_name xlm-roberta-base --epochs 10 --out_path ./outputs/massive/xlm-roberta-base/scale10_syntax_knn_syntax_average_geo --vector syntax_knn_syntax_average_geo --scale 10 --eval_path ./outputs/massive/xlm-roberta-base_scale10

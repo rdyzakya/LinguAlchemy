@@ -88,8 +88,10 @@ if __name__ == "__main__":
     os.makedirs(args.out_path)
 
 
-    if args.wandb_offline:
-        os.environ["WANDB_MODE"] = "offline"
+    # if args.wandb_offline:
+    #     os.environ["WANDB_MODE"] = "offline"
+    os.environ["WANDB_MODE"] = "disabled"
+    os.environ["WANDB_DISABLED"] = "true"
 
 
     # Language Codes
@@ -122,12 +124,12 @@ if __name__ == "__main__":
     dataset_train, dataset_valid = [], []
     for lang in tqdm(train_langs):
         dataset_train.append(
-            load_dataset("AmazonScience/massive", lang, split='train').remove_columns(
+            load_dataset("AmazonScience/massive", lang, split='train', trust_remote_code=True).remove_columns(
                 ["id", "partition", "scenario", "annot_utt", "worker_id", "slot_method", "judgments"]
             )
         )
         dataset_valid.append(
-            load_dataset("AmazonScience/massive", lang, split='validation').remove_columns(
+            load_dataset("AmazonScience/massive", lang, split='validation', trust_remote_code=True).remove_columns(
                 ["id", "partition", "scenario", "annot_utt", "worker_id", "slot_method", "judgments"]
             )
         )
@@ -149,7 +151,7 @@ if __name__ == "__main__":
 
     dataset_test = {}
     for lang in tqdm(complete_langs):
-        dataset_test[lang] = load_dataset("AmazonScience/massive", lang, split='test').remove_columns(
+        dataset_test[lang] = load_dataset("AmazonScience/massive", lang, split='test', trust_remote_code=True).remove_columns(
             ["id", "partition", "scenario", "annot_utt", "worker_id", "slot_method", "judgments"]
         )
 
@@ -158,7 +160,9 @@ if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
 
     # Load URIEL data
-    uriel_data = torch.load(f'/home/alham.fikri/farid/lingualchemy/vectors/{args.vector}.pt')
+    current_script_path = os.path.abspath(__file__)
+    uriel_path = os.path.join(current_script_path, "..", "vectors", f"{args.vector}.pt")
+    uriel_data = torch.load(uriel_path, weights_only=False)
     uriel_vector = torch.stack([torch.tensor(uriel_data[lang]) for lang in sorted(uriel_data.keys())])
     lang_to_index = {lang: idx for idx, lang in enumerate(sorted(uriel_data.keys()))}
 
