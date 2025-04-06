@@ -161,7 +161,8 @@ if __name__ == "__main__":
 
     # Load URIEL data
     current_script_path = os.path.abspath(__file__)
-    uriel_path = os.path.join(current_script_path, "..", "vectors", f"{args.vector}.pt")
+    current_script_base_path, _ = os.path.split(current_script_path)
+    uriel_path = os.path.join(current_script_base_path, "..", "vectors", f"{args.vector}.pt")
     uriel_data = torch.load(uriel_path, weights_only=False)
     uriel_vector = torch.stack([torch.tensor(uriel_data[lang]) for lang in sorted(uriel_data.keys())])
     lang_to_index = {lang: idx for idx, lang in enumerate(sorted(uriel_data.keys()))}
