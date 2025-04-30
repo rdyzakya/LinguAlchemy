@@ -217,8 +217,10 @@ if __name__ == "__main__":
         learning_rate=5e-5,
         overwrite_output_dir=True,
         num_train_epochs=args.epochs,
-        per_device_train_batch_size=64,
-        per_device_eval_batch_size=64,
+        # per_device_train_batch_size=64,
+        # per_device_eval_batch_size=64,
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=16,
         logging_steps=100,
         dataloader_num_workers=32,
         seed=42,
@@ -246,7 +248,8 @@ if __name__ == "__main__":
     all_preds, all_labels = [], []
 
     for lang, dataset in dset_test_dict.items():
-        test_loader = DataLoader(dataset, batch_size=64)
+        # test_loader = DataLoader(dataset, batch_size=64)
+        test_loader = DataLoader(dataset, batch_size=16)
         for batch in tqdm(test_loader, desc=f"Testing lang {lang}"):
             input_ids = batch['input_ids'].to(device)
             attention_mask = batch['attention_mask'].to(device)
