@@ -1,0 +1,3 @@
+hparam: Models Our study employs two widely used and resource-efficient multilingual language models: Multilingual BERT Base (mBERTBASE) and XLMRoBERTa Base (XLM-RBASE). In our training process, we use a learning rate of 5×10−5 , train for 30 epochs, and measure performance based on accuracy for MASSIVE and MasakhaNews, and Pearson correlation for SemRel. Each training takes at most 5 hours using a single A100 GPU.
+vector uriel: syntax_knn+syntax_avg+geo
+vector uriel+: IDK (maybe the same with uriel)

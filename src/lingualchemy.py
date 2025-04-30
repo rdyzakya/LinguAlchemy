@@ -95,20 +95,22 @@ if __name__ == "__main__":
 
 
     # Language Codes
-    complete_langs = [
-        "af-ZA", "am-ET", "ar-SA", "az-AZ", "bn-BD", "ca-ES", "cy-GB", "da-DK", "de-DE",
-        "el-GR", "en-US", "es-ES", "fa-IR", "fi-FI", "fr-FR", "he-IL", "hi-IN", "hu-HU",
-        "hy-AM", "id-ID", "is-IS", "it-IT", "ja-JP", "jv-ID", "ka-GE", "km-KH", "kn-IN",
-        "ko-KR", "lv-LV", "ml-IN", "mn-MN", "ms-MY", "my-MM", "nb-NO", "nl-NL", "pl-PL",
-        "pt-PT", "ro-RO", "ru-RU", "sl-SL", "sq-AL", "sv-SE", "sw-KE", "ta-IN", "te-IN",
-        "th-TH", "tl-PH", "tr-TR", "ur-PK", "vi-VN", "zh-CN", "zh-TW"
-    ]
-
-    train_langs = [
-        "ar-SA", "hy-AM", "bn-BD", "my-MM", "zh-CN", "zh-TW", "en-US", "fi-FI", "fr-FR",
-        "ka-GE", "de-DE", "el-GR", "hi-IN", "hu-HU", "is-IS", "id-ID", "ja-JP", "jv-ID",
-        "ko-KR", "lv-LV", "pt-PT", "ru-RU", "es-ES", "vi-VN", "tr-TR",
-    ]
+    # complete_langs = [
+    #     "af-ZA", "am-ET", "ar-SA", "az-AZ", "bn-BD", "ca-ES", "cy-GB", "da-DK", "de-DE",
+    #     "el-GR", "en-US", "es-ES", "fa-IR", "fi-FI", "fr-FR", "he-IL", "hi-IN", "hu-HU",
+    #     "hy-AM", "id-ID", "is-IS", "it-IT", "ja-JP", "jv-ID", "ka-GE", "km-KH", "kn-IN",
+    #     "ko-KR", "lv-LV", "ml-IN", "mn-MN", "ms-MY", "my-MM", "nb-NO", "nl-NL", "pl-PL",
+    #     "pt-PT", "ro-RO", "ru-RU", "sl-SL", "sq-AL", "sv-SE", "sw-KE", "ta-IN", "te-IN",
+    #     "th-TH", "tl-PH", "tr-TR", "ur-PK", "vi-VN", "zh-CN", "zh-TW"
+    # ]
+    complete_langs = ['id-ID', 'ta-IN', 'th-TH', 'tl-PH', 'en-US', 'km-KH', 'vi-VN', 'my-MM', 'jv-ID']
+ 
+    # train_langs = [
+    #     "ar-SA", "hy-AM", "bn-BD", "my-MM", "zh-CN", "zh-TW", "en-US", "fi-FI", "fr-FR",
+    #     "ka-GE", "de-DE", "el-GR", "hi-IN", "hu-HU", "is-IS", "id-ID", "ja-JP", "jv-ID",
+    #     "ko-KR", "lv-LV", "pt-PT", "ru-RU", "es-ES", "vi-VN", "tr-TR",
+    # ]
+    train_langs = ['id-ID', 'ta-IN', 'th-TH', 'tl-PH', 'en-US', 'km-KH', 'vi-VN', 'my-MM', 'jv-ID']
 
     def simplify_lang_code(lang):
         if lang == "zh-CN":
