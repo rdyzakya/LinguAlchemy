@@ -25,11 +25,11 @@ VECTORS=(
     'uriel_ppl/geo_minmax_scaled' 'uriel_ppl/fam_minmax_scaled'
 )
 # 
-for MODEL_NAME in bert-base-multilingual-cased xlm-roberta-base;
+for MODEL_NAME in xlm-roberta-base bert-base-multilingual-cased;
 do
     for VECTOR in "${VECTORS[@]}";
     do
-        CUDA_VISIBLE_DEVICES=4,5 python -m src.lingualchemy \
+        CUDA_VISIBLE_DEVICES=2 python -m src.lingualchemy \
         --model_name ${MODEL_NAME} --epochs ${EPOCHES}  \
         --out_path ${OUT_DIR}/massive/${MODEL_NAME}/scale${SCALE}_${VECTOR} \
         --vector ${VECTOR} --scale ${SCALE} --eval_path ${EVAL_DIR}/massive/${MODEL_NAME}_scale${SCALE}

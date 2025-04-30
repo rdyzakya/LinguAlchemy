@@ -72,7 +72,7 @@ class CustomTrainer(Trainer):
         logits, _, pooled_output = model(**inputs)[0]
         loss_fct = nn.CrossEntropyLoss()
         labels = labels.to(logits.device).long()
-        loss_cls = loss_fct(logits.view(-1, model.module.num_labels), labels.view(-1))
+        loss_cls = loss_fct(logits.view(-1, model.config.num_labels), labels.view(-1))
 
         if uriel_labels is not None:        
             uriel_labels = uriel_labels.to(self.lang_vec.device).long()
@@ -202,7 +202,7 @@ class CustomTrainerDynamicscale(Trainer):
 
         labels = labels.to(logits.device).long()
 
-        loss_cls_raw = loss_fct(logits.view(-1, model.module.num_labels), labels.view(-1))
+        loss_cls_raw = loss_fct(logits.view(-1, model.config.num_labels), labels.view(-1))
         
 
         # if language_labels is not None:
