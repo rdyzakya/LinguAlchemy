@@ -93,24 +93,7 @@ if __name__ == "__main__":
     os.environ["WANDB_MODE"] = "disabled"
     os.environ["WANDB_DISABLED"] = "true"
 
-
-    # Language Codes
-    # complete_langs = [
-    #     "af-ZA", "am-ET", "ar-SA", "az-AZ", "bn-BD", "ca-ES", "cy-GB", "da-DK", "de-DE",
-    #     "el-GR", "en-US", "es-ES", "fa-IR", "fi-FI", "fr-FR", "he-IL", "hi-IN", "hu-HU",
-    #     "hy-AM", "id-ID", "is-IS", "it-IT", "ja-JP", "jv-ID", "ka-GE", "km-KH", "kn-IN",
-    #     "ko-KR", "lv-LV", "ml-IN", "mn-MN", "ms-MY", "my-MM", "nb-NO", "nl-NL", "pl-PL",
-    #     "pt-PT", "ro-RO", "ru-RU", "sl-SL", "sq-AL", "sv-SE", "sw-KE", "ta-IN", "te-IN",
-    #     "th-TH", "tl-PH", "tr-TR", "ur-PK", "vi-VN", "zh-CN", "zh-TW"
-    # ]
     complete_langs = ['id-ID', 'ta-IN', 'th-TH', 'tl-PH', 'en-US', 'km-KH', 'vi-VN', 'my-MM', 'jv-ID']
- 
-    # train_langs = [
-    #     "ar-SA", "hy-AM", "bn-BD", "my-MM", "zh-CN", "zh-TW", "en-US", "fi-FI", "fr-FR",
-    #     "ka-GE", "de-DE", "el-GR", "hi-IN", "hu-HU", "is-IS", "id-ID", "ja-JP", "jv-ID",
-    #     "ko-KR", "lv-LV", "pt-PT", "ru-RU", "es-ES", "vi-VN", "tr-TR",
-    # ]
-    train_langs = ['id-ID', 'ta-IN', 'th-TH', 'tl-PH', 'en-US', 'km-KH', 'vi-VN', 'my-MM', 'jv-ID']
 
     def simplify_lang_code(lang):
         if lang == "zh-CN":
@@ -119,37 +102,7 @@ if __name__ == "__main__":
             return "zh"
         return lang.split("-")[0]
 
-    simple_train_langs = [simplify_lang_code(lang) for lang in train_langs]
     simple_complete_langs = [simplify_lang_code(lang) for lang in complete_langs]
-
-    # Loading and processing datasets
-    dataset_train, dataset_valid = [], []
-    for lang in tqdm(train_langs):
-        dataset_train.append(
-            load_dataset("AmazonScience/massive", lang, split='train', trust_remote_code=True).remove_columns(
-                ["id", "partition", "scenario", "annot_utt", "worker_id", "slot_method", "judgments"]
-            )
-        )
-        dataset_valid.append(
-            load_dataset("AmazonScience/massive", lang, split='validation', trust_remote_code=True).remove_columns(
-                ["id", "partition", "scenario", "annot_utt", "worker_id", "slot_method", "judgments"]
-            )
-        )
-
-    dset_dict = DatasetDict(
-        {
-            "train": (
-                concatenate_datasets(dataset_train).select(range(100))
-                if args.debug
-                else concatenate_datasets(dataset_train)
-            ),
-            "valid": (
-                concatenate_datasets(dataset_valid).select(range(10))
-                if args.debug
-                else concatenate_datasets(dataset_valid)
-            ),
-        }
-    )
 
     dataset_test = {}
     for lang in tqdm(complete_langs):
@@ -181,13 +134,9 @@ if __name__ == "__main__":
         
         return encoding
 
-    if "intent" not in dset_dict.column_names:
-        dset_dict = dset_dict.rename_column("intent", "labels")
     if "intent" not in dset_test_dict.column_names:
         dset_test_dict = dset_test_dict.rename_column("intent", "labels")
 
-
-    dset_dict = dset_dict.map(encode_batch, batched=True)
     dset_test_dict = dset_test_dict.map(encode_batch, batched=True)
 
     # Initialize model
@@ -196,51 +145,16 @@ if __name__ == "__main__":
         print(args.model_name)
         model = FusionBertForSequenceClassification(config, uriel_vector)
 
-        dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
         dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
 
     elif args.model_name == "xlm-roberta-base":
         print(args.model_name)
         model = FusionXLMRForSequenceClassification(config, uriel_vector)
 
-        dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
         dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
         
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
-
-    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
-    training_args = TrainingArguments(
-        output_dir=args.out_path,
-        save_strategy="epoch",
-        save_total_limit=2,
-        learning_rate=5e-5,
-        overwrite_output_dir=True,
-        num_train_epochs=args.epochs,
-        # per_device_train_batch_size=64,
-        # per_device_eval_batch_size=64,
-        per_device_train_batch_size=16,
-        per_device_eval_batch_size=16,
-        logging_steps=100,
-        dataloader_num_workers=32,
-        seed=42,
-    )
-
-    trainer = CustomTrainer(
-        model=model,
-        config=config,
-        args=training_args,
-        train_dataset=dset_dict['train'],
-        compute_metrics=compute_metrics,
-        callbacks=[EarlyStoppingEpochCallback(early_stopping_patience=3)],
-        lang_vec=uriel_vector,
-        scale=args.scale
-    )
-
-    trainer.train()
-
-    trainer.model.save_pretrained(args.out_path)
-    tokenizer.save_pretrained(args.out_path)
 
     model.eval()
     results = {}
@@ -275,7 +189,6 @@ if __name__ == "__main__":
             'f1_micro': f1_micro,
             'accuracy': accuracy
         }
-    
 
     results_file_path = f"{args.eval_path}/{args.vector}_scores.json"
     print(results)
@@ -285,10 +198,11 @@ if __name__ == "__main__":
         else:
             raise AssertionError(f"Output file {results_file_path} already exists!")
 
-    eval_base_path, _ = os.path.split(results_file_path)
-    os.makedirs(f"{eval_base_path}", exist_ok=True)
+    os.makedirs(f"{args.eval_path}", exist_ok=True)
 
     with open(
         results_file_path, "w", encoding="utf-8"
     ) as file:
         json.dump(results, file, indent=4)
+
+
