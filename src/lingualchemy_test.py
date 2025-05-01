@@ -152,6 +152,15 @@ if __name__ == "__main__":
         model = FusionXLMRForSequenceClassification(config, uriel_vector)
 
         dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
+    else:
+        try:
+            model = FusionBertForSequenceClassification(config, uriel_vector)
+
+            dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
+        except:
+            model = FusionXLMRForSequenceClassification(config, uriel_vector)
+
+            dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
         
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
