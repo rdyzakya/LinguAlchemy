@@ -207,7 +207,8 @@ if __name__ == "__main__":
         else:
             raise AssertionError(f"Output file {results_file_path} already exists!")
 
-    os.makedirs(f"{args.eval_path}", exist_ok=True)
+    eval_base_path, _ = os.path.split(results_file_path)
+    os.makedirs(f"{eval_base_path}", exist_ok=True)
 
     with open(
         results_file_path, "w", encoding="utf-8"
