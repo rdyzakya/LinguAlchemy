@@ -57,12 +57,6 @@ if __name__ == "__main__":
         help="Only train on the first 100 examples.",
     )
     parser.add_argument(
-        "--out_path",
-        type=str,
-        default="/mnt/beegfs/farid/lingualchemy/ablation",
-        help="Set the pre-trained model.",
-    )
-    parser.add_argument(
         "--eval_path",
         type=str,
         default="/home/alham.fikri/farid/lingualchemy/outputs",
@@ -79,13 +73,6 @@ if __name__ == "__main__":
     )
     
     args = parser.parse_args()
-
-    if os.path.exists(args.out_path):
-        assert (
-            args.debug or args.override_results
-        ), f"Output dir {args.out_path} already exists!"
-        shutil.rmtree(args.out_path)
-    os.makedirs(args.out_path)
 
 
     # if args.wandb_offline:
