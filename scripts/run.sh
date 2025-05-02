@@ -11,17 +11,17 @@ VECTORS=(
     'uriel_plus_ppl/syntactic_minmax_scaled'
     'uriel_plus_ppl/syntactic_std_scaled' 
     'uriel_plus_ppl/geographic_minmax_scaled' 
-    # 'uriel_plus_ppl/geographic_std_scaled'
+    'uriel_plus_ppl/geographic_std_scaled'
     'uriel_plus/syntactic'
-    # 'uriel_plus/geographic' 
-    # 'ppl/ppl_vectors_std_scale' 
-    # 'ppl/ppl_vectors_minmax_scale' 
-    # 'uriel/syntax_knn' 
-    # 'uriel/geo' 
+    'uriel_plus/geographic' 
+    'ppl/ppl_vectors_std_scale' 
+    'ppl/ppl_vectors_minmax_scale' 
+    'uriel/syntax_knn' 
+    'uriel/geo' 
 )
 
 # 
-for MODEL_NAME in xlm-roberta-base bert-base-multilingual-cased;
+for MODEL_NAME in bert-base-multilingual-cased; # xlm-roberta-base 
 do
     for VECTOR in "${VECTORS[@]}";
     do
