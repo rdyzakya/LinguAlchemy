@@ -33,6 +33,11 @@ if __name__ == "__main__":
         help="Set the pre-trained model.",
     )  # "bigscience/mt0-base"
     parser.add_argument(
+        "--model_path",
+        type=str,
+        help="Set the pre-trained model path.",
+    )  # "bigscience/mt0-base"
+    parser.add_argument(
         "--epochs",
         type=int,
         default=10,
@@ -127,27 +132,28 @@ if __name__ == "__main__":
     dset_test_dict = dset_test_dict.map(encode_batch, batched=True)
 
     # Initialize model
-    config = AutoConfig.from_pretrained(args.model_name, num_labels=60)
+    config = AutoConfig.from_pretrained(args.model_path, num_labels=60)
     if args.model_name == "bert-base-multilingual-cased":
         print(args.model_name)
-        model = FusionBertForSequenceClassification(config, uriel_vector)
+        model = FusionBertForSequenceClassification(config, uriel_vector, path=args.model_path)
 
         dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
 
     elif args.model_name == "xlm-roberta-base":
         print(args.model_name)
-        model = FusionXLMRForSequenceClassification(config, uriel_vector)
+        model = FusionXLMRForSequenceClassification(config, uriel_vector, path=args.model_path)
 
         dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
     else:
-        try:
-            model = FusionBertForSequenceClassification(config, uriel_vector)
+        raise Exception("No model found for", args.model_name)
+        # try:
+        #     model = FusionBertForSequenceClassification(config, uriel_vector)
 
-            dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
-        except:
-            model = FusionXLMRForSequenceClassification(config, uriel_vector)
+        #     dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
+        # except:
+        #     model = FusionXLMRForSequenceClassification(config, uriel_vector)
 
-            dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
+        #     dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
         
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)

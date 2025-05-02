@@ -17,10 +17,10 @@ def compute_metrics(pred):
 
 # Model Definition
 class FusionBertForSequenceClassification(BertForSequenceClassification):
-    def __init__(self, config, lang_vec):
+    def __init__(self, config, lang_vec, path=None):
         super().__init__(config)
         self.lang_vec = lang_vec
-        self.bert = BertModel.from_pretrained("bert-base-multilingual-cased")
+        self.bert = BertModel.from_pretrained("bert-base-multilingual-cased" if path is None else path)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.lang_projection = nn.Linear(config.hidden_size, lang_vec.size(1))
@@ -34,10 +34,10 @@ class FusionBertForSequenceClassification(BertForSequenceClassification):
         return ((logits.to(device), lang_logits.to(device), pooled_output.to(device)),)
 
 class FusionXLMRForSequenceClassification(XLMRobertaForSequenceClassification):
-    def __init__(self, config, lang_vec):
+    def __init__(self, config, lang_vec, path=None):
         super().__init__(config)
         self.lang_vec = lang_vec
-        self.bert = XLMRobertaModel.from_pretrained("xlm-roberta-base")
+        self.bert = XLMRobertaModel.from_pretrained("xlm-roberta-base" if path is None else path)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.lang_projection = nn.Linear(config.hidden_size, lang_vec.size(1))
