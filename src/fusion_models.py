@@ -26,6 +26,7 @@ class FusionBertForSequenceClassification(BertForSequenceClassification):
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.lang_projection = nn.Linear(config.hidden_size, lang_vec.size(1))
         if path:
+            print("LOAD SAFETENSORS")
             weight = load_file(path + "/model.safetensors")
             classifier_state_dict = {
                 "weight" : weight["classifier.weight"],
@@ -55,6 +56,7 @@ class FusionXLMRForSequenceClassification(XLMRobertaForSequenceClassification):
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.lang_projection = nn.Linear(config.hidden_size, lang_vec.size(1))
         if path:
+            print("LOAD SAFETENSORS")
             weight = load_file(path + "/model.safetensors")
             classifier_state_dict = {
                 "weight" : weight["classifier.weight"],
@@ -64,8 +66,14 @@ class FusionXLMRForSequenceClassification(XLMRobertaForSequenceClassification):
                 "weight" : weight["lang_projection.weight"],
                 "bias" : weight["lang_projection.bias"]
             }
+            pooler_state_dict = {
+                "dense.weight" : weight["bert.pooler.dense.weight"],
+                "dense.bias" : weight["bert.pooler.dense.bias"]
+            }
             self.classifier.load_state_dict(classifier_state_dict)
             self.lang_projection.load_state_dict(lang_projection_state_dict)
+            self.bert.pooler.load_state_dict(pooler_state_dict)
+            
         self.init_weights()
 
     def forward(self, input_ids=None, attention_mask=None, token_type_ids=None, language_labels=None, uriel_labels=None, labels=None):
