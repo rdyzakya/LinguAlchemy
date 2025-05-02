@@ -4,6 +4,7 @@ from transformers import BertForSequenceClassification, BertModel, XLMRobertaFor
 
 import torch.nn.functional as F
 from transformers import TrainerCallback, TrainerState, TrainerControl, TrainingArguments
+from safetensors.torch import load_file
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -24,6 +25,18 @@ class FusionBertForSequenceClassification(BertForSequenceClassification):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.lang_projection = nn.Linear(config.hidden_size, lang_vec.size(1))
+        if path:
+            weight = load_file(path + "/model.safetensors")
+            classifier_state_dict = {
+                "weight" : weight["classifier.weight"],
+                "bias" : weight["classifier.bias"]
+            }
+            lang_projection_state_dict = {
+                "weight" : weight["lang_projection.weight"],
+                "bias" : weight["lang_projection.bias"]
+            }
+            self.classifier.load_state_dict(classifier_state_dict)
+            self.lang_projection.load_state_dict(lang_projection_state_dict)
         self.init_weights()
 
     def forward(self, input_ids=None, attention_mask=None, token_type_ids=None, language_labels=None, uriel_labels=None, labels=None):
@@ -41,6 +54,18 @@ class FusionXLMRForSequenceClassification(XLMRobertaForSequenceClassification):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.lang_projection = nn.Linear(config.hidden_size, lang_vec.size(1))
+        if path:
+            weight = load_file(path + "/model.safetensors")
+            classifier_state_dict = {
+                "weight" : weight["classifier.weight"],
+                "bias" : weight["classifier.bias"]
+            }
+            lang_projection_state_dict = {
+                "weight" : weight["lang_projection.weight"],
+                "bias" : weight["lang_projection.bias"]
+            }
+            self.classifier.load_state_dict(classifier_state_dict)
+            self.lang_projection.load_state_dict(lang_projection_state_dict)
         self.init_weights()
 
     def forward(self, input_ids=None, attention_mask=None, token_type_ids=None, language_labels=None, uriel_labels=None, labels=None):
