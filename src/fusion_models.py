@@ -66,15 +66,17 @@ class FusionXLMRForSequenceClassification(XLMRobertaForSequenceClassification):
                 "weight" : weight["lang_projection.weight"],
                 "bias" : weight["lang_projection.bias"]
             }
-            pooler_state_dict = {
-                "dense.weight" : weight["bert.pooler.dense.weight"],
-                "dense.bias" : weight["bert.pooler.dense.bias"]
+            bert_state_dict = {
+                # "dense.weight" : weight["bert.pooler.dense.weight"],
+                # "dense.bias" : weight["bert.pooler.dense.bias"]
+                k.replace("bert.", "") : v for k, v in weight.items() if k.startswith("bert.")
             }
             self.classifier.load_state_dict(classifier_state_dict)
             self.lang_projection.load_state_dict(lang_projection_state_dict)
-            self.bert.pooler.load_state_dict(pooler_state_dict)
+            self.bert.load_state_dict(bert_state_dict)
             
-        self.init_weights()
+        else:
+            self.init_weights()
 
     def forward(self, input_ids=None, attention_mask=None, token_type_ids=None, language_labels=None, uriel_labels=None, labels=None):
         outputs = self.bert(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
