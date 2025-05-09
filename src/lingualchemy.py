@@ -170,17 +170,18 @@ if __name__ == "__main__":
         uriel_path = os.path.join(current_script_base_path, "..", "vectors", f"{args.vector}.pt")
         uriel_data = torch.load(uriel_path, weights_only=False)
         uriel_vector = torch.stack([torch.tensor(uriel_data[lang]) for lang in sorted(uriel_data.keys())])
-    lang_to_index = {lang: idx for idx, lang in enumerate(sorted(uriel_data.keys()))}
+        lang_to_index = {lang: idx for idx, lang in enumerate(sorted(uriel_data.keys()))}
 
     def encode_batch(batch):
         """Encodes a batch of input data using the model tokenizer."""
         lang_label = batch['locale'][0]
         encoding = tokenizer(batch["utt"], max_length=80, truncation=True, padding="max_length", return_tensors="pt")
         
-        lang_index = lang_to_index[lang_label]
-        encoding['language_labels'] = torch.tensor([lang_index] * len(batch['utt']))
-        uriel_vec = uriel_vector[lang_index]
-        encoding['uriel_labels'] = uriel_vec.repeat(len(batch['utt']), 1)
+        if args.vector:
+            lang_index = lang_to_index[lang_label]
+            encoding['language_labels'] = torch.tensor([lang_index] * len(batch['utt']))
+            uriel_vec = uriel_vector[lang_index]
+            encoding['uriel_labels'] = uriel_vec.repeat(len(batch['utt']), 1)
         
         return encoding
 
@@ -201,9 +202,13 @@ if __name__ == "__main__":
             model = FusionBertForSequenceClassification(config, uriel_vector)
         else:
             model = BertForSequenceClassification.from_pretrained(args.model_name, num_labels=60)
-
-        dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
-        dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
+        
+        if args.vector:
+            dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
+            dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
+        else:
+            dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask"])
+            dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask"])
 
     elif args.model_name == "xlm-roberta-base":
         print(args.model_name)
@@ -212,8 +217,12 @@ if __name__ == "__main__":
         else:
             model = XLMRobertaForSequenceClassification.from_pretrained(args.model_name, num_labels=60)
 
-        dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
-        dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
+        if args.vector:
+            dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
+            dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
+        else:
+            dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask"])
+            dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask"])
         
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
