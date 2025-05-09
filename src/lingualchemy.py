@@ -7,7 +7,10 @@ from torch.utils.data import DataLoader
 from transformers import (
     AutoConfig,
     AutoTokenizer,
-    AutoModelForSequenceClassification
+    BertForSequenceClassification,
+    XLMRobertaForSequenceClassification,
+    Trainer
+
 )
 from datasets import load_dataset, DatasetDict, concatenate_datasets
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
@@ -47,7 +50,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--vector",
         type=str,
-        default=10,
         help="The uriel vector set for training.",
     )
     parser.add_argument(
@@ -164,9 +166,10 @@ if __name__ == "__main__":
     # Load URIEL data
     current_script_path = os.path.abspath(__file__)
     current_script_base_path, _ = os.path.split(current_script_path)
-    uriel_path = os.path.join(current_script_base_path, "..", "vectors", f"{args.vector}.pt")
-    uriel_data = torch.load(uriel_path, weights_only=False)
-    uriel_vector = torch.stack([torch.tensor(uriel_data[lang]) for lang in sorted(uriel_data.keys())])
+    if args.vector:
+        uriel_path = os.path.join(current_script_base_path, "..", "vectors", f"{args.vector}.pt")
+        uriel_data = torch.load(uriel_path, weights_only=False)
+        uriel_vector = torch.stack([torch.tensor(uriel_data[lang]) for lang in sorted(uriel_data.keys())])
     lang_to_index = {lang: idx for idx, lang in enumerate(sorted(uriel_data.keys()))}
 
     def encode_batch(batch):
@@ -194,14 +197,20 @@ if __name__ == "__main__":
     config = AutoConfig.from_pretrained(args.model_name, num_labels=60)
     if args.model_name == "bert-base-multilingual-cased":
         print(args.model_name)
-        model = FusionBertForSequenceClassification(config, uriel_vector)
+        if args.vector:
+            model = FusionBertForSequenceClassification(config, uriel_vector)
+        else:
+            model = BertForSequenceClassification.from_pretrained(args.model_name, num_labels=60)
 
         dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
         dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "token_type_ids", "attention_mask", "language_labels", "uriel_labels"])
 
     elif args.model_name == "xlm-roberta-base":
         print(args.model_name)
-        model = FusionXLMRForSequenceClassification(config, uriel_vector)
+        if args.vector:
+            model = FusionXLMRForSequenceClassification(config, uriel_vector)
+        else:
+            model = XLMRobertaForSequenceClassification.from_pretrained(args.model_name, num_labels=60)
 
         dset_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
         dset_test_dict.set_format(type="torch", columns=["labels", "utt", "input_ids", "attention_mask", "language_labels", "uriel_labels"])
@@ -226,7 +235,8 @@ if __name__ == "__main__":
         seed=42,
     )
 
-    trainer = CustomTrainer(
+    TrainerClass = CustomTrainer if args.vector else Trainer
+    trainer = TrainerClass(
         model=model,
         config=config,
         args=training_args,
