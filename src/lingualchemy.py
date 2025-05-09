@@ -244,17 +244,25 @@ if __name__ == "__main__":
         seed=42,
     )
 
-    TrainerClass = CustomTrainer if args.vector else Trainer
-    trainer = TrainerClass(
-        model=model,
-        config=config,
-        args=training_args,
-        train_dataset=dset_dict['train'],
-        compute_metrics=compute_metrics,
-        callbacks=[EarlyStoppingEpochCallback(early_stopping_patience=3)],
-        lang_vec=uriel_vector,
-        scale=args.scale
-    )
+    if args.vector:
+        trainer = CustomTrainer(
+            model=model,
+            config=config,
+            args=training_args,
+            train_dataset=dset_dict['train'],
+            compute_metrics=compute_metrics,
+            callbacks=[EarlyStoppingEpochCallback(early_stopping_patience=3)],
+            lang_vec=uriel_vector,
+            scale=args.scale
+        )
+    else:
+        trainer = Trainer(
+            model=model,
+            args=training_args,
+            train_dataset=dset_dict['train'],
+            compute_metrics=compute_metrics,
+            callbacks=[EarlyStoppingEpochCallback(early_stopping_patience=3)],
+        )
 
     trainer.train()
 
