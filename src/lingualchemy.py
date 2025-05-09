@@ -287,7 +287,7 @@ if __name__ == "__main__":
         }
     
 
-    results_file_path = f"{args.eval_path}/{args.vector}_scores.json"
+    results_file_path = f"{args.eval_path}/{args.vector}_scores.json" if args.vector else f"{args.eval_path}/base_scores.json"
     print(results)
     if os.path.exists(results_file_path):
         if args.override_results:
