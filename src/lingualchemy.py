@@ -283,7 +283,11 @@ if __name__ == "__main__":
             labels = batch['labels'].to(device)
 
             with torch.no_grad():
-                logits, lang_logits, pooled_output = model(input_ids, attention_mask, None, None, None)[0]
+                if args.vector:
+                    logits, lang_logits, pooled_output = model(input_ids, attention_mask, None, None, None)[0]
+                else:
+                    out = model(input_ids=input_ids, attention_mask=attention_mask)
+                    logits = out.logits
                 preds = torch.argmax(logits, dim=1)
 
                 all_preds.extend(preds.cpu().numpy())
